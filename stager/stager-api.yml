@@ -1,0 +1,184 @@
+swagger: '2.0'
+info:
+  version: v1
+  title: Cloud Foundry CC Bridge Stager
+consumes:
+    - application/json
+produces:
+    - application/json
+schemes:
+    - http
+basePath: /v1
+paths:
+  "/staging/{staging_guid}":
+    put:
+      operationId: stage
+      parameters:
+        - name: staging_guid
+          in: path
+          required: true
+          type: string
+        - name: staging_request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/StagingRequestFromCC"
+      responses:
+        202:
+          description: "Staging request accepted"
+        400:
+          description: "JSON unmarshalling error"
+        404:
+          description: "Couldn't find backend"
+        500:
+          description: "Staging error"
+          schema:
+            $ref: "#/definitions/StagingResponseFromCC"
+    delete:
+      operationId: stopStaging
+      parameters:
+        - name: staging_guid
+          in: path
+          required: true
+          type: string
+      responses:
+          202:
+            description: "Request to stop accepted"
+          404:
+            description: "Staging task not found"
+          500:
+            description: "Internal error"
+    post:
+      operationId: stagingComplete
+      parameters:
+        - name: staging_guid
+          in: path
+          required: true
+          type: string
+        - name: staging_complete_request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/TaskCallbackResponse"
+      responses:
+        200:
+          description: "Status OK"
+          schema:
+            $ref: "#/definitions/StagingResponseFromCC"
+        400:
+          description: "Bad request"
+        404:
+          description: "Can't find staging task"
+        503:
+          description: "Cloud Controller unavailable"
+        default:
+          description: "Response code from Cloud Controller"
+definitions:
+  StagingError:
+    type: object
+    properties:
+      id:
+        type: string
+      message:
+        type: string
+  StagingResponseFromCC:
+    type: object
+    properties:
+      error:
+        $ref: "#/definitions/StagingError"
+      result:
+        type: object
+  StagingRequestFromCC:
+    type: object
+    properties:
+      app_id:
+        type: string
+      file_descriptors:
+        type: integer
+        format: int64
+      memory_mb:
+        type: integer
+        format: int64
+      disk_mb:
+        type: integer
+        format: int64
+      environment:
+        type: array
+        items:
+          $ref: "#/definitions/EnvironmentVariable"
+      egress_rules:
+         type: array
+         items:
+           $ref: "#/definitions/SecurityGroupRule"
+      timeout:
+        type: integer
+        format: int64
+      log_guid:
+        type: string
+      lifecycle:
+        type: string
+      lifecycle_data:
+        type: object
+      completion_callback:
+        type: string
+  SecurityGroupRule:
+    type: object
+    properties:
+      protocol:
+        type: string
+      destinations:
+        type: array
+        items:
+          type: string
+      ports:
+        type: array
+        items:
+          type: integer
+          format: int64
+      port_range:
+        $ref: "#/definitions/PortRange"
+      icmp_info:
+        $ref: "#/definitions/ICMPInfo"
+      log:
+        type: boolean
+  PortRange:
+    type: object
+    properties:
+      start:
+        type: integer
+        format: int64
+      end:
+        type: integer
+        format: int64
+  ICMPInfo:
+    type: object
+    properties:
+      type:
+        type: integer
+        format: int64
+      code:
+        type: integer
+        format: int64
+  EnvironmentVariable:
+    type: object
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+  TaskCallbackResponse:
+    type: object
+    properties:
+      task_guid:
+        type: string
+      failed:
+        type: boolean
+      failure_reason:
+        type: string
+      result:
+        type: string
+      annotation:
+        type: string
+      created_at:
+        type: integer
+        format: int64
