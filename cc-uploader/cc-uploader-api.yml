@@ -1,0 +1,76 @@
+swagger: '2.0'
+info:
+  version: v1
+  title: Cloud Foundry CC Bridge CC-Uploader
+consumes:
+    - application/octet-stream
+produces:
+    - application/json
+schemes:
+    - http
+basePath: /v1
+paths:
+  "/droplet/{guid}":
+    post:
+      operationId: uploadDroplet
+      parameters:
+        - name: guid
+          in: path
+          required: true
+          type: string
+        - name: "cc-droplet-upload-uri"
+          in: query
+          required: true
+          type: string
+        - name: timeout
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: droplet
+          in: body
+          required: true
+          schema:
+            type: string
+            format: binary
+      responses:
+        201:
+          description: "Droplet has been uploaded"
+        400:
+          description: "Missing or invalid upload URI, or invalid timeout"
+        500:
+          description: "Droplet upload failed"
+        default:
+          description: "Response code from upload request"
+  "/build_artifacts/{app_guid}":
+    post:
+      operationId: uploadBuildArtifacts
+      parameters:
+        - name: app_guid
+          in: path
+          required: true
+          type: string
+        - name: "cc-build-artifacts-upload-uri"
+          in: query
+          required: true
+          type: string
+        - name: timeout
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: artifacts
+          in: body
+          required: true
+          schema:
+            type: string
+            format: binary
+      responses:
+        201:
+          description: "Artifacts have been uploaded"
+        400:
+          description: "Missing or invalid upload URI, or invalid timeout"
+        500:
+          description: "Artifacts upload failed"
+        default:
+          description: "Response code from upload request"

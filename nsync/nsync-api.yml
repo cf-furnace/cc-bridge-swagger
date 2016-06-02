@@ -1,0 +1,283 @@
+swagger: '2.0'
+info:
+  version: v1
+  title: Cloud Foundry CC Bridge Nsync
+consumes:
+    - application/json
+produces:
+    - application/json
+schemes:
+    - http
+basePath: /v1
+paths:
+  "/apps/{process_guid}":
+    put:
+      operationId: desireApp
+      parameters:
+        - name: process_guid
+          in: path
+          required: true
+          type: string
+        - name: desire_app_request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/DesireAppRequestFromCC"
+      responses:
+        202:
+          description: "LRP request accepted"
+        400:
+          description: "JSON unmarshalling error or process-guid mismatch or bad request"
+        409:
+          description: "Resource conflict"
+        503:
+          description: "Cannot find/create desired LRP"
+    delete:
+      operationId: stopApp
+      parameters:
+        - name: process_guid
+          in: path
+          required: true
+          type: string
+      responses:
+          202:
+            description: "Request to stop app accepted"
+          400:
+            description: "Missing process guid"
+          404:
+            description: "Process not found"
+          503:
+            description: "Service unavailable"
+  "/apps/{process_guid}/index/{index}":
+    delete:
+      operationId: killIndex
+      parameters:
+        - name: process_guid
+          in: path
+          required: true
+          type: string
+        - name: index
+          in: path
+          required: true
+          type: string
+      responses:
+          202:
+            description: "Request to kill index accepted"
+          400:
+            description: "Missing process guid or missing/invalid index"
+          404:
+            description: "Process and index combination not found"
+          503:
+            description: "Service unavailable"
+  "/tasks":
+    post:
+      operationId: desireTask
+      parameters:
+        - name: task_request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/TaskRequestFromCC"
+      responses:
+        202:
+          description: "Task request accepted"
+        400:
+          description: "Bad request"
+  "/tasks/{task_guid}":
+    delete:
+      operationId: cancelTask
+      parameters:
+        - name: task_guid
+          in: path
+          required: true
+          type: string
+      responses:
+        202:
+          description: "Cancel request accepted"
+        404:
+          description: "Can't find staging task"
+        503:
+          description: "Cloud Controller unavailable"
+definitions:
+  DesireAppRequestFromCC:
+    type: object
+    properties:
+      process_guid:
+        type: string
+      droplet_uri:
+        type: string
+      docker_image:
+        type: string
+      docker_login_server:
+        type: string
+      docker_user:
+        type: string
+      docker_password:
+        type: string
+      docker_email:
+        type: string
+      stack:
+        type: string
+      start_command:
+        type: string
+      execution_metadata:
+        type: string
+      environment:
+        type: array
+        items:
+          $ref: "#/definitions/EnvironmentVariable"
+      memory_mb:
+        type: integer
+        format: int64
+      disk_mb:
+        type: integer
+        format: int64
+      file_descriptors:
+        type: integer
+        format: int64
+      num_instances:
+        type: integer
+        format: int64
+      routing_info:
+        $ref: "#/definitions/CCRouteInfo"
+      allow_ssh:
+        type: boolean
+      log_guid:
+        type: string
+      health_check_type:
+        $ref: "#/definitions/HealthCheckType"
+      health_check_timeout_in_seconds:
+        type: integer
+        format: int64
+      egress_rules:
+         type: array
+         items:
+           $ref: "#/definitions/SecurityGroupRule"
+      etag:
+        type: string
+      ports:
+        type: array
+        items:
+          type: integer
+          format: int64
+      log_source:
+        type: string
+      network:
+        $ref: "#/definitions/Network"
+      volume_mounts:
+        type: array
+        items:
+          $ref: "#/definitions/VolumeMount"
+  SecurityGroupRule:
+    type: object
+    properties:
+      protocol:
+        type: string
+      destinations:
+        type: array
+        items:
+          type: string
+      ports:
+        type: array
+        items:
+          type: integer
+          format: int64
+      port_range:
+        $ref: "#/definitions/PortRange"
+      icmp_info:
+        $ref: "#/definitions/ICMPInfo"
+      log:
+        type: boolean
+  PortRange:
+    type: object
+    properties:
+      start:
+        type: integer
+        format: int64
+      end:
+        type: integer
+        format: int64
+  ICMPInfo:
+    type: object
+    properties:
+      type:
+        type: integer
+        format: int64
+      code:
+        type: integer
+        format: int64
+  EnvironmentVariable:
+    type: object
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+  CCRouteInfo:
+    type: object
+    additionalProperties:
+      type: string
+  HealthCheckType:
+    type: string
+  Network:
+    type: object
+    properties:
+      Properties:
+        type: object
+        additionalProperties:
+          type: string
+  VolumeMount:
+    type: object
+    properties:
+      driver:
+        type: string
+      volume_id:
+        type: string
+      container_path:
+        type: string
+      mode:
+        $ref: "#/definitions/BindMountMode"
+      config:
+        type: string
+  BindMountMode:
+    type: integer
+    format: int32
+  TaskRequestFromCC:
+    type: object
+    properties:
+      task_guid:
+        type: string
+      log_guid:
+        type: string
+      memory_mb:
+        type: integer
+        format: int64
+      disk_mb:
+        type: integer
+        format: int64
+      lifecycle:
+        type: string
+      environment:
+        type: array
+        items:
+          $ref: "#/definitions/VolumeMount"
+      egress_rules:
+        type: array
+        items:
+          $ref: "#/definitions/SecurityGroupRule"
+      droplet_uri:
+        type: string
+      docker_path:
+        type: string
+      rootfs:
+        type: string
+      completion_callback:
+        type: string
+      command:
+        type: string
+      log_source:
+        type: string
+      volume_mounts:
+        type: array
+        items:
+          $ref: "#/definitions/VolumeMount"

@@ -1,0 +1,136 @@
+swagger: '2.0'
+info:
+  version: v1
+  title: Cloud Foundry CC Bridge TPS
+consumes:
+    - application/json
+produces:
+    - application/json
+schemes:
+    - http
+basePath: /v1
+paths:
+  "/bulk_actual_lrp_status":
+    get:
+      operationId: bulkLRPStatus
+      parameters:
+        - name: guids
+          in: query
+          required: true
+          type: string
+          description: "comma separated list of guids"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                $ref: "#/definitions/LRPInstance"
+        400:
+          description: "Failed parsing guids"
+        500:
+          description: "Failed constructing throttler"
+  "/actual_lrps/{guid}":
+    get:
+      operationId: LRPStatus
+      parameters:
+        - name: guid
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/LRPInstance"
+        500:
+          description: "Failed fetching actual LRP info"
+  "/actual_lrps/{guid}/stats":
+    get:
+      operationId: LRPStats
+      parameters:
+        - name: guid
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/LRPInstance"
+        400:
+          description: "Empty guid specified"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "No process found for guid"
+        500:
+          description: "Failed fetching actual LRP info"
+definitions:
+  LRPInstance:
+    type: object
+    properties:
+      process_guid:
+        type: string
+      instance_guid:
+        type: string
+      index:
+        type: integer
+        format: int64
+      state:
+        type: string
+      details:
+        type: string
+      host:
+        type: string
+      port:
+        type: integer
+        format: int32
+      net_info:
+        $ref: "#/definitions/ActualLRPNetInfo"
+      uptime:
+        type: integer
+        format: int64
+      since:
+        type: integer
+        format: int64
+      stats:
+        $ref: "#/definitions/LRPInstanceStats"
+  LRPInstanceStats:
+    type: object
+    properties:
+      time:
+        type: string
+      cpu:
+        type: number
+        format: double
+      mem:
+        type: integer
+        format: int64
+      disk:
+        type: integer
+        format: int64
+  ActualLRPNetInfo:
+    type: object
+    properties:
+      address:
+        type: string
+      ports:
+        type: array
+        items:
+          $ref: "#/definitions/PortMapping"
+  PortMapping:
+    type: object
+    properties:
+      constainer_port:
+        type: integer
+        format: int32
+      host_port:
+        type: integer
+        format: int32
