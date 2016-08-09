@@ -48,6 +48,7 @@ paths:
             description: "Staging task not found"
           500:
             description: "Internal error"
+  "/staging/{staging_guid}/completed":
     post:
       operationId: stagingComplete
       parameters:
