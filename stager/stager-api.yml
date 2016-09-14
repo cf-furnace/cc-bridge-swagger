@@ -209,3 +209,5 @@ definitions:
       created_at:
         type: integer
         format: int64
+      space:
+        type: string
