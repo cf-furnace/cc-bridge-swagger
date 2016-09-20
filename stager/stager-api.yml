@@ -119,34 +119,8 @@ definitions:
       lifecycle:
         type: string
       lifecycle_data:
-        $ref: "#/definitions/LifecycleData"
+        type: object
       completion_callback:
-        type: string
-  LifecycleData:
-    type: object
-    properties:
-      app_bits_download_uri:
-        type: string
-      build_artifacts_cache_download_uri:
-        type: string
-      build_artifacts_cache_upload_uri:
-        type: string
-      droplet_upload_uri:
-        type: string
-      stack:
-        type: string
-      buildpacks:
-        type: array
-        items:
-          $ref: "#/definitions/Buildpack"
-  Buildpack:
-    type: object
-    properties:
-      key:
-        type: string
-      name:
-        type: string
-      url:
         type: string
   SecurityGroupRule:
     type: object
